@@ -12,6 +12,9 @@ import { v4 as uuidv4 } from 'uuid'
 import CustomForm from 'Components/StyledComponents/CustomForm'
 import CustomInput from 'Components/StyledComponents/CustomInput'
 
+// Utils
+import { Encrypt, Decrypt } from 'Utils/Aes'
+
 const Container = styled.div`
 	display: grid;
 	margin-top: 4%;
@@ -102,9 +105,9 @@ const Room = () => {
 
 	const SendMessage = () => {
 		if (!Message) return
-		
+
 		Socket.emit('room:message:send', {
-			message: Message,
+			message: Encrypt(Message),
 			id: uuidv4(),
 		})
 
@@ -124,7 +127,7 @@ const Room = () => {
 		SetUsername(username)
 		SetRoomName(roomName)
 
-		const socket = io.connect('http://localhost:8080', {
+		const socket = io.connect(process.env.REACT_APP_SOCKETIO_SERVER, {
 			query: {
 				username,
 				roomName,
@@ -134,7 +137,10 @@ const Room = () => {
 		SetSocket(socket)
 
 		socket.on('room:message:receive', ({ from, message, id }) => {
-			SetMessages(messages => [{ from, message, id }, ...messages])
+			SetMessages(messages => [
+				{ from, message: Decrypt(message), id },
+				...messages,
+			])
 		})
 
 		socket.on('room:notification', ({ message }) => {
