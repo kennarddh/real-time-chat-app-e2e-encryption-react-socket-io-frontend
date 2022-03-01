@@ -16,9 +16,9 @@ import CustomInput from 'Components/StyledComponents/CustomInput'
 import { Encrypt, Decrypt } from 'Utils/Aes'
 
 const Container = styled.div`
-	display: grid;
+	display: flex;
+	flex-direction: column;
 	margin-top: 4%;
-	grid-template-rows: 10% 80% 10%;
 	height: 90vh;
 `
 
@@ -81,6 +81,7 @@ const SendMessageInput = styled(CustomInput)`
 `
 
 const Header = styled.div`
+	height: 5%;
 	display: flex;
 	flex-direction: row;
 	justify-content: space-between;
@@ -89,10 +90,23 @@ const Header = styled.div`
 	background-color: #23b574;
 `
 
+const UsersList = styled.div`
+	width: 20%;
+`
+
+const UsersListItem = styled.p``
+
+const Center = styled.div`
+	height: 80%;
+	display: flex;
+	flex-direction: row;
+`
+
 const Room = () => {
 	const [Message, SetMessage] = useState('')
 	const [Messages, SetMessages] = useState([])
 	const [NowNotification, SetNowNotification] = useState('')
+	const [Users, SetUsers] = useState([])
 
 	const [Username, SetUsername] = useState('')
 	const [RoomName, SetRoomName] = useState('')
@@ -147,6 +161,10 @@ const Room = () => {
 			SetNowNotification(message)
 		})
 
+		socket.on('room:users:receive', ({ users }) => {
+			SetUsers(users)
+		})
+
 		return () => socket.disconnect()
 	}, [LocationState, navigate])
 
@@ -158,16 +176,26 @@ const Room = () => {
 					<p>{NowNotification}</p>
 					<h3>Username: {Username}</h3>
 				</Header>
-				<HistoryContainer>
-					{Messages.map(({ from, message, id }) => (
-						<HistoryItemContainer key={id} left={from !== Username}>
-							<HistoryItem gray={from !== Username}>
-								{from !== Username && <p>{from}</p>}
-								<p>{message}</p>
-							</HistoryItem>
-						</HistoryItemContainer>
-					))}
-				</HistoryContainer>
+				<Center>
+					<HistoryContainer>
+						{Messages.map(({ from, message, id }) => (
+							<HistoryItemContainer
+								key={id}
+								left={from !== Username}
+							>
+								<HistoryItem gray={from !== Username}>
+									{from !== Username && <p>{from}</p>}
+									<p>{message}</p>
+								</HistoryItem>
+							</HistoryItemContainer>
+						))}
+					</HistoryContainer>
+					<UsersList>
+						{Users.map(item => (
+							<UsersListItem>{item}</UsersListItem>
+						))}
+					</UsersList>
+				</Center>
 				<SendMessageContainer
 					noMarginButton
 					buttonTitle='Send'
