@@ -141,7 +141,7 @@ const Room = () => {
 		SetUsername(username)
 		SetRoomName(roomName)
 
-		const socket = io.connect(process.env.REACT_APP_SOCKETIO_SERVER, {
+		const socket = io.connect(process.env.REACT_APP_SERVER, {
 			query: {
 				username,
 				roomName,
@@ -163,6 +163,10 @@ const Room = () => {
 
 		socket.on('room:users:receive', ({ users }) => {
 			SetUsers(users)
+		})
+
+		window.addEventListener('beforeunload', () => {
+			socket.disconnect()
 		})
 
 		return () => socket.disconnect()
